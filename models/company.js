@@ -66,6 +66,30 @@ class Company {
     return companiesRes.rows;
   }
 
+  /** Find companies with certain filters applied
+   *
+   * Returns [{ handle, name, description, numEmployees, logoUrl }, ...]
+   */
+
+  static async findBySearch(whereConditional) {
+
+    const companiesRes = await db.query(
+      `SELECT handle,
+              name,
+              description,
+              num_employees AS "numEmployees",
+              logo_url AS "logoUrl"
+        FROM companies
+        WHERE ${whereConditional}
+        ORDER BY name`);
+
+    // e.g. of WHERE clause
+    // WHERE num_employees <= 10, name ILIKE '%net%'
+
+
+    return companiesRes.rows;
+  }
+
   /** Given a company handle, return data about company.
    *
    * Returns { handle, name, description, numEmployees, logoUrl, jobs }

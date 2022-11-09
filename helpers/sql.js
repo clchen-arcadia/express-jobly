@@ -2,18 +2,33 @@
 
 const { BadRequestError } = require("../expressError");
 
-/** Function that accepts an object with data to update
- *  If no keys are present, return an error
- *  Map through number of keys in dataToUpdate
- *  If jsToSql exists, change the column name in SQL. Otherwise, retain
- *  the original name
- *  Create string literals for each parameter starting at $1
- *  Return object with string of joined cols and values from dataToUpdate
+/** Function accepts an object with data to update,
+ *  if object is empty, return an error.
+ *  Maps over object keys in and references jsToSql to change JavaScript
+ *  variable names to column names in SQL. (If a key in dataToUpdate does
+ *  not appear as a key in jsToSql, that key name
+ *  will appear in the SQL injection as is.)
+ *  Create string literals for SQL injection and changes from 0-based indexing
+ *  to SQL 1-based indexing.
+ *  Return two-keyed object with setCols being a string for SQL commands
+ *  and dataToUpdate being an array of data values to be set in SQL.
  *
- * @param {*} dataToUpdate
- * @param {*} jsToSql
- * @returns
+ * @param {*} dataToUpdate Object like  {
+          firstName: "Bob",
+          lastName: "Smith",
+          isAdmin: "true"
+        }
+ * @param {*} jsToSql Object like  {
+          firstName: "first_name",
+          lastName: "last_name",
+          isAdmin: "is_admin"
+        }
+ * @returns Object like {
+          setCols: '"first_name"=$1, "last_name"=$2, "is_admin"=$3',
+          values: ["Bob", "Smith", "true"]
+        }
  */
+
 function sqlForPartialUpdate(dataToUpdate, jsToSql) {
   const keys = Object.keys(dataToUpdate);
   if (keys.length === 0) throw new BadRequestError("No data");
@@ -29,4 +44,43 @@ function sqlForPartialUpdate(dataToUpdate, jsToSql) {
   };
 }
 
-module.exports = { sqlForPartialUpdate };
+/**
+ * Function accepts
+ */
+
+function sqlForCompanySearch(dataToUpdate, jsToSql) {
+  const keys = Object.keys(dataToUpdate);
+  if (keys.length === 0) throw new BadRequestError("No data");
+
+  // {firstName: 'Aliya', age: 32} => ['"first_name"=$1', '"age"=$2']
+  const cols = keys.map((colName, idx) =>
+      `"${jsToSql[colName] || colName}"=$${idx + 1}`,
+  );
+
+  return whereConditional;
+}
+
+function sqlForCompanySearchByName(){
+
+}
+
+/**
+ * Accepts object conditions with keys (minimum one) of
+ * minEmployees, maxEmployees
+ */
+function sqlForCompanySearchByNumEmps(conditions){
+
+  const { minEmployees, maxEmployees } = conditions;
+  if( minEmployees === undefined && maxEmployees === undefined){
+    throw new BadRequestError();
+  }
+  
+
+}
+
+module.exports = {
+  sqlForPartialUpdate,
+  sqlForCompanySearch,
+  sqlForCompanySearchByName,
+  sqlForCompanySearchByNumEmps
+};
