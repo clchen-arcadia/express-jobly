@@ -60,13 +60,22 @@ function sqlForCompanySearch(dataToUpdate, jsToSql) {
   return whereConditional;
 }
 
-function sqlForCompanySearchByName(){
-
+/**
+ * Function accepts string for search term
+ * Function returns one item array of a string literal that
+ *  is valid WHERE clause for postgres
+ */
+function sqlForCompanySearchByName(searchTerm){
+  if(searchTerm === undefined || searchTerm === ""){
+    throw new BadRequestError();
+  }
+  return [`name ILIKE %${searchTerm}%`];
 }
 
 /**
  * Accepts object conditions with keys (minimum one) of
  * minEmployees, maxEmployees
+ * Returns list of WHERE clause conditionals for postgres
  */
 function sqlForCompanySearchByNumEmps(conditions){
 
@@ -74,8 +83,18 @@ function sqlForCompanySearchByNumEmps(conditions){
   if( minEmployees === undefined && maxEmployees === undefined){
     throw new BadRequestError();
   }
-  
+  if( minEmployees > maxEmployees ) {
+    throw new BadRequestError();
+  }
+  let output = [];
+  if(minEmployees !== undefined){
+    output.push(`num_employees >= ${minEmployees}`);
+  }
+  if(maxEmployees !== undefined){
+    output.push(`num_employees <= ${maxEmployees}`);
+  }
 
+  return output;
 }
 
 module.exports = {

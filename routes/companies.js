@@ -51,6 +51,14 @@ router.post("/", ensureLoggedIn, async function (req, res, next) {
  */
 
 router.get("/", async function (req, res, next) {
+
+  const { minEmployees, maxEmployees, nameLike } = req.params;
+
+  // Logic to decide if a search term was invoked
+  if(){
+    sqlForCompanySearch(minEmployees, maxEmployees, nameLike);
+  }
+
   const companies = await Company.findAll();
   return res.json({ companies });
 });

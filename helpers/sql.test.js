@@ -1,7 +1,12 @@
 "use strict";
 
 const { BadRequestError } = require("../expressError");
-const { sqlForPartialUpdate, sqlForCompanySearch, sqlForCompanySearchByName, sqlForCompanySearchByNumEmps } = require("./sql");
+const {
+  sqlForPartialUpdate,
+  sqlForCompanySearch,
+  sqlForCompanySearchByName,
+  sqlForCompanySearchByNumEmps
+} = require("./sql");
 
 describe("sqlForPartialUpdate", function () {
 
