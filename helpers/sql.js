@@ -34,8 +34,8 @@ function sqlForPartialUpdate(dataToUpdate, jsToSql) {
   if (keys.length === 0) throw new BadRequestError("No data");
 
   // {firstName: 'Aliya', age: 32} => ['"first_name"=$1', '"age"=$2']
-  const cols = keys.map((colName, idx) =>
-      `"${jsToSql[colName] || colName}"=$${idx + 1}`,
+  const cols = keys.map(
+    (colName, idx) => `"${jsToSql[colName] || colName}"=$${idx + 1}`
   );
 
   return {
@@ -45,19 +45,23 @@ function sqlForPartialUpdate(dataToUpdate, jsToSql) {
 }
 
 /**
- * Function accepts
+ * Function accepts parameters object
+ * Function returns string of postgres WHERE clause conditional
  */
 
-function sqlForCompanySearch(dataToUpdate, jsToSql) {
-  const keys = Object.keys(dataToUpdate);
-  if (keys.length === 0) throw new BadRequestError("No data");
+function sqlForCompanySearch(paramsObj) {
+  const { minEmployees, maxEmployees, nameLike } = paramsObj;
+  let conditionals = [];
+  if (nameLike !== undefined) {
+    conditionals = conditionals.concat(sqlForCompanySearchByName(nameLike));
+  }
+  if (minEmployees !== undefined || maxEmployees !== undefined) {
+    conditionals = conditionals.concat(
+      sqlForCompanySearchByNumEmps({ minEmployees, maxEmployees })
+    );
+  }
 
-  // {firstName: 'Aliya', age: 32} => ['"first_name"=$1', '"age"=$2']
-  const cols = keys.map((colName, idx) =>
-      `"${jsToSql[colName] || colName}"=$${idx + 1}`,
-  );
-
-  return whereConditional;
+  return conditionals.join(", ");
 }
 
 /**
@@ -65,11 +69,11 @@ function sqlForCompanySearch(dataToUpdate, jsToSql) {
  * Function returns one item array of a string literal that
  *  is valid WHERE clause for postgres
  */
-function sqlForCompanySearchByName(searchTerm){
-  if(searchTerm === undefined || searchTerm === ""){
+function sqlForCompanySearchByName(searchTerm) {
+  if (searchTerm === undefined || searchTerm === "") {
     throw new BadRequestError();
   }
-  return [`name ILIKE %${searchTerm}%`];
+  return [`name ILIKE '%${searchTerm}%'`];
 }
 
 /**
@@ -77,20 +81,19 @@ function sqlForCompanySearchByName(searchTerm){
  * minEmployees, maxEmployees
  * Returns list of WHERE clause conditionals for postgres
  */
-function sqlForCompanySearchByNumEmps(conditions){
-
+function sqlForCompanySearchByNumEmps(conditions) {
   const { minEmployees, maxEmployees } = conditions;
-  if( minEmployees === undefined && maxEmployees === undefined){
+  if (minEmployees === undefined && maxEmployees === undefined) {
     throw new BadRequestError();
   }
-  if( minEmployees > maxEmployees ) {
+  if (minEmployees > maxEmployees) {
     throw new BadRequestError();
   }
   let output = [];
-  if(minEmployees !== undefined){
+  if (minEmployees !== undefined) {
     output.push(`num_employees >= ${minEmployees}`);
   }
-  if(maxEmployees !== undefined){
+  if (maxEmployees !== undefined) {
     output.push(`num_employees <= ${maxEmployees}`);
   }
 
@@ -101,5 +104,5 @@ module.exports = {
   sqlForPartialUpdate,
   sqlForCompanySearch,
   sqlForCompanySearchByName,
-  sqlForCompanySearchByNumEmps
+  sqlForCompanySearchByNumEmps,
 };

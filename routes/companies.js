@@ -11,6 +11,8 @@ const Company = require("../models/company");
 
 const companyNewSchema = require("../schemas/companyNew.json");
 const companyUpdateSchema = require("../schemas/companyUpdate.json");
+const companySearchSchema = require("../schemas/companySearch.json");
+const { findBySearch } = require("../models/company");
 
 const router = new express.Router();
 
@@ -51,13 +53,23 @@ router.post("/", ensureLoggedIn, async function (req, res, next) {
  */
 
 router.get("/", async function (req, res, next) {
-
+  const validator = jsonschema.validate(
+    req.params,
+    companySearchSchema,
+    {required: true}
+    );
+    if (!validator.valid) {
+      const errs = validator.errors.map(e => e.stack);
+      throw new BadRequestError(errs);
+    }
   const { minEmployees, maxEmployees, nameLike } = req.params;
+  if (nameLike !== undefined || minEmployees !== undefined || maxEmployees !== undefined) {
+    const sqlSearch = sqlForCompanySearch(req.params);
+    const companies = await Company.findBySearch(sqlSearch);
+    return res.json({ companies });
+  }
 
   // Logic to decide if a search term was invoked
-  if(){
-    sqlForCompanySearch(minEmployees, maxEmployees, nameLike);
-  }
 
   const companies = await Company.findAll();
   return res.json({ companies });
