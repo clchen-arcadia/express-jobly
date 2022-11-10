@@ -109,13 +109,15 @@ describe("GET /companies", function () {
         },
       ],
     });
-  });
+    expect(resp.status).toEqual(200);
+  }); //TODO: route tests should always test status code
 
 
   test("works for filtering by numEmployees", async function () {
     const resp = await request(app).get(
       "/companies?nameLike=c&minEmployees=2&maxEmployees=100"
     );
+    expect(resp.status).toEqual(200);
     expect(resp.body).toEqual({
       companies: [
         {
@@ -140,7 +142,11 @@ describe("GET /companies", function () {
     const resp = await request(app).get(
       "/companies?termDoesNotExist=c&minEmployees=2"
     );
+    console.log("testttt5", resp.error.message);
     expect(resp.error.status).toEqual(400);
+    expect(resp.error.message[0]).toEqual(
+      "instance is not allowed to have the additional property \"termDoesNotExist\""
+    );
   });
 
 

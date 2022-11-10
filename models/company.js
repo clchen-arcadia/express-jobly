@@ -67,10 +67,9 @@ class Company {
   }
 
   /** Find companies with certain filters applied
-   *  Accepts string whereConditional -- must be nonempty string
-   *   of valid postgres
+   *  Accepts object of parameters
    *
-   * Returns [{ handle, name, description, numEmployees, logoUrl }, ...]
+   *  Returns [{ handle, name, description, numEmployees, logoUrl }, ...]
    */
 
   static async findBySearch(queryParams) {
@@ -90,7 +89,7 @@ class Company {
     // e.g. of WHERE clause
     // WHERE num_employees <= 10 AND name ILIKE '%net%'
 
-    const companiesRes = await db.query(querySql, [...values]);
+    const companiesRes = await db.query(querySql, values);
 
     return companiesRes.rows;
   }

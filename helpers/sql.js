@@ -28,7 +28,8 @@ const { BadRequestError } = require("../expressError");
           values: ["Bob", "Smith", "true"]
         }
  */
-
+// NOTE: more important part is eg input and output. better than an essay.
+// btw only talk about what it does. not how it does it. but admittedly this is a complicated one
 function sqlForPartialUpdate(dataToUpdate, jsToSql) {
 
   const keys = Object.keys(dataToUpdate);
@@ -52,6 +53,7 @@ function sqlForPartialUpdate(dataToUpdate, jsToSql) {
  * For searchCols postgres WHERE clauses are joined with " AND ", giving a string.
  * And values is an array of the relevant values being searched by.
  *
+ * TODO: example input
  *
  * Returns Object like: {
           searchCols (string): 'name ILIKE $1 AND num_employees >= $2',
@@ -68,7 +70,7 @@ function sqlForCompanySearch(queryParams) {
 
   if (nameLike !== undefined) {
 
-    let { colsTemp, valuesTemp } =
+    const { colsTemp, valuesTemp } =
       _sqlForCompanySearchByName(nameLike, values.length);
 
     cols = cols.concat(colsTemp);
@@ -76,7 +78,7 @@ function sqlForCompanySearch(queryParams) {
   }
 
   if (minEmployees !== undefined || maxEmployees !== undefined) {
-    let { colsTemp, valuesTemp } =
+    const { colsTemp, valuesTemp } =
       _sqlForCompanySearchByNumEmps(
       {
         minEmployees,
@@ -108,7 +110,7 @@ function sqlForCompanySearch(queryParams) {
  *    valuesTemp: ['%net%']
  * }
  */
-
+// TODO: these could be company helper methods? not "general" sql...
 function _sqlForCompanySearchByName(searchTerm, currentIdx) {
   if (searchTerm === undefined || searchTerm === "") {
     throw new BadRequestError();
@@ -142,11 +144,11 @@ function _sqlForCompanySearchByNumEmps(conditions, currentIdx) {
     throw new BadRequestError();
   }
   if (minEmployees > maxEmployees) {
-    throw new BadRequestError();
+    throw new BadRequestError("minEmployees can't be larger than maxEmployees"); //TODO: add msg!
   }
 
-  let searchCols = [];
-  let values = [];
+  const searchCols = [];
+  const values = [];
 
   if (minEmployees !== undefined) {
     searchCols.push(`num_employees >= $${currentIdx + 1}`);

@@ -61,9 +61,11 @@ router.post("/", ensureLoggedIn, async function (req, res, next) {
 router.get("/", async function (req, res, next) {
 
   // May have query strings like: ?nameLike=Arnold&minEmployees=2
-
+  // debugger;
+  // console.log("test-----", req.query);
   let parsedUrl = url.parse(req.url);
   let parsedQs = querystring.parse(parsedUrl.query);
+  //req.query...? ---> it exists!! think about this for later...
 
   // Need to parseInt for minEmployees and maxEmployees
   if (parsedQs.minEmployees !== undefined) {
@@ -84,9 +86,7 @@ router.get("/", async function (req, res, next) {
   }
 
   // Check if any search query exists, if so, invoke search.
-  if (
-    Object.keys(parsedQs).length > 0
-  ) {
+  if (Object.keys(parsedQs).length > 0) {
     const companies = await Company.findBySearch(parsedQs);
     return res.json({ companies });
   }
