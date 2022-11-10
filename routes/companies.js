@@ -13,6 +13,12 @@ const companyNewSchema = require("../schemas/companyNew.json");
 const companyUpdateSchema = require("../schemas/companyUpdate.json");
 const companySearchSchema = require("../schemas/companySearch.json");
 const { findBySearch } = require("../models/company");
+const { sqlForCompanySearch } = require("../helpers/sql");
+
+// code injection
+const url = require('url');
+const querystring = require('querystring');
+
 
 const router = new express.Router();
 
@@ -30,7 +36,7 @@ router.post("/", ensureLoggedIn, async function (req, res, next) {
   const validator = jsonschema.validate(
     req.body,
     companyNewSchema,
-    {required: true}
+    { required: true }
   );
   if (!validator.valid) {
     const errs = validator.errors.map(e => e.stack);
@@ -53,24 +59,41 @@ router.post("/", ensureLoggedIn, async function (req, res, next) {
  */
 
 router.get("/", async function (req, res, next) {
+
+  // May have query strings like: ?nameLike=Arnold&minEmployees=2
+  debugger;
+
+  let parsedUrl = url.parse(req.url);
+  let parsedQs = querystring.parse(parsedUrl.query);
+
+
+  // Need to parseInt for minEmployees and maxEmployees
+  if (parsedQs.minEmployees !== undefined) {
+    parsedQs.minEmployees = parseInt(parsedQs.minEmployees);
+  }
+  if (parsedQs.maxEmployees !== undefined) {
+    parsedQs.maxEmployees = parseInt(parsedQs.maxEmployees);
+  }
+
   const validator = jsonschema.validate(
-    req.params,
+    parsedQs,
     companySearchSchema,
-    {required: true}
-    );
-    if (!validator.valid) {
-      const errs = validator.errors.map(e => e.stack);
-      throw new BadRequestError(errs);
-    }
-  const { minEmployees, maxEmployees, nameLike } = req.params;
-  if (nameLike !== undefined || minEmployees !== undefined || maxEmployees !== undefined) {
-    const sqlSearch = sqlForCompanySearch(req.params);
-    const companies = await Company.findBySearch(sqlSearch);
+    { required: true }
+  );
+  if (!validator.valid) {
+    const errs = validator.errors.map(e => e.stack);
+    throw new BadRequestError(errs);
+  }
+
+  // Check if any search query exists, if so, invoke search.
+  if (
+    Object.keys(parsedQs).length > 0
+  ) {
+    const companies = await Company.findBySearch(parsedQs);
     return res.json({ companies });
   }
 
-  // Logic to decide if a search term was invoked
-
+  // If no search query exists, return all companies.
   const companies = await Company.findAll();
   return res.json({ companies });
 });
@@ -103,7 +126,7 @@ router.patch("/:handle", ensureLoggedIn, async function (req, res, next) {
   const validator = jsonschema.validate(
     req.body,
     companyUpdateSchema,
-    {required:true}
+    { required: true }
   );
   if (!validator.valid) {
     const errs = validator.errors.map(e => e.stack);

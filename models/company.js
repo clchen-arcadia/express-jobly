@@ -2,7 +2,7 @@
 
 const db = require("../db");
 const { BadRequestError, NotFoundError } = require("../expressError");
-const { sqlForPartialUpdate } = require("../helpers/sql");
+const { sqlForPartialUpdate, sqlForCompanySearch } = require("../helpers/sql");
 
 /** Related functions for companies. */
 
@@ -67,25 +67,30 @@ class Company {
   }
 
   /** Find companies with certain filters applied
+   *  Accepts string whereConditional -- must be nonempty string
+   *   of valid postgres
    *
    * Returns [{ handle, name, description, numEmployees, logoUrl }, ...]
    */
 
-  static async findBySearch(whereConditional) {
+  static async findBySearch(queryParams) {
+    debugger;
+    const {searchCols, values} = sqlForCompanySearch(queryParams);
 
-    const companiesRes = await db.query(
-      `SELECT handle,
+    const querySql = `
+      SELECT  handle,
               name,
               description,
               num_employees AS "numEmployees",
               logo_url AS "logoUrl"
         FROM companies
-        WHERE ${whereConditional}
-        ORDER BY name`);
+        WHERE ${searchCols}
+        ORDER BY name`;
 
     // e.g. of WHERE clause
     // WHERE num_employees <= 10, name ILIKE '%net%'
 
+    const companiesRes = await db.query(querySql, [...values]);
 
     return companiesRes.rows;
   }

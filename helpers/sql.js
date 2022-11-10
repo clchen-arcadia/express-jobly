@@ -24,12 +24,13 @@ const { BadRequestError } = require("../expressError");
           isAdmin: "is_admin"
         }
  * @returns Object like {
-          setCols: '"first_name"=$1, "last_name"=$2, "is_admin"=$3',
+          setCols: ' "first_name"=$1, "last_name"=$2, "is_admin"=$3 ',
           values: ["Bob", "Smith", "true"]
         }
  */
 
 function sqlForPartialUpdate(dataToUpdate, jsToSql) {
+
   const keys = Object.keys(dataToUpdate);
   if (keys.length === 0) throw new BadRequestError("No data");
 
@@ -45,43 +46,69 @@ function sqlForPartialUpdate(dataToUpdate, jsToSql) {
 }
 
 /**
- * Function accepts parameters object
- * Function returns string of postgres WHERE clause conditional
+ * Function accepts parameters object, whose keys are allowed search parameters.
+ * Function invokes helper functions as needed to collect WHERE clause parameters.
+ *
+ * Returns Object like: {
+          searchCols: '"first_name"=$1, "last_name"=$2, "is_admin"=$3',
+          values: ["Bob", "Smith", "true"]
+        }
  */
 
-function sqlForCompanySearch(paramsObj) {
-  const { minEmployees, maxEmployees, nameLike } = paramsObj;
-  let conditionals = [];
+function sqlForCompanySearch(queryParams) {
+
+  //generate searchCols
+  //looks like: name ILIKE $1, num_employees >= $2
+
+
+  const { minEmployees, maxEmployees, nameLike } = queryParams;
+
+  let cols = [];
+  let values = [];
+  let currentIdx = 0;
+
   if (nameLike !== undefined) {
-    conditionals = conditionals.concat(sqlForCompanySearchByName(nameLike));
+    cols = cols.concat(
+      sqlForCompanySearchByName(nameLike, currentIdx, values)
+    );
   }
   if (minEmployees !== undefined || maxEmployees !== undefined) {
-    conditionals = conditionals.concat(
-      sqlForCompanySearchByNumEmps({ minEmployees, maxEmployees })
+    cols = cols.concat(
+      sqlForCompanySearchByNumEmps({ minEmployees, maxEmployees }, currentIdx, values)
     );
   }
 
-  return conditionals.join(", ");
+  return {
+    searchCols: cols.join(", "),
+    values: Object.values(queryParams)
+  };
 }
 
 /**
  * Function accepts string for search term
- * Function returns one item array of a string literal that
- *  is valid WHERE clause for postgres
+ * Function returns a single item array of a string literal for
+ *  valid postgres WHERE clause
  */
-function sqlForCompanySearchByName(searchTerm) {
+
+function sqlForCompanySearchByName(searchTerm, currentIdx, values) {
   if (searchTerm === undefined || searchTerm === "") {
     throw new BadRequestError();
   }
-  return [`name ILIKE '%${searchTerm}%'`];
+  const output = `name ILIKE '%$${currentIdx + 1}%'`;
+  currentIdx++;
+  return [output];
 }
 
 /**
  * Accepts object conditions with keys (minimum one) of
- * minEmployees, maxEmployees
+ *  minEmployees, maxEmployees
  * Returns list of WHERE clause conditionals for postgres
+ *  when both are given, minEmployees statement comes before maxEmployees statement
+ *
+ * --mutates currentIdx in place!
  */
-function sqlForCompanySearchByNumEmps(conditions) {
+function sqlForCompanySearchByNumEmps(conditions, currentIdx, values) {
+
   const { minEmployees, maxEmployees } = conditions;
   if (minEmployees === undefined && maxEmployees === undefined) {
     throw new BadRequestError();
@@ -89,12 +116,16 @@ function sqlForCompanySearchByNumEmps(conditions) {
   if (minEmployees > maxEmployees) {
     throw new BadRequestError();
   }
+
   let output = [];
+
   if (minEmployees !== undefined) {
-    output.push(`num_employees >= ${minEmployees}`);
+    output.push(`num_employees >= $${currentIdx + 1}`);
+    currentIdx++;
   }
   if (maxEmployees !== undefined) {
-    output.push(`num_employees <= ${maxEmployees}`);
+    output.push(`num_employees <= $${currentIdx + 1}`);
+    currentIdx++;
   }
 
   return output;

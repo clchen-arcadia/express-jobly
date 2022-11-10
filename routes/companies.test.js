@@ -95,7 +95,7 @@ describe("GET /companies", function () {
     });
   });
 
-  test("works for filtering", async function () {
+  test("works for filtering by name", async function () {
     const resp = await request(app).get("/companies?nameLike=c1");
     expect(resp.body).toEqual({
       companies: [
@@ -110,6 +110,32 @@ describe("GET /companies", function () {
     });
   });
 
+
+  test("works for filtering by numEmployees", async function () {
+    const resp = await request(app).get(
+      "/companies?nameLike=c&minEmployees=2"
+    );
+    expect(resp.body).toEqual({
+      companies: [
+        {
+          handle: "c2",
+          name: "C2",
+          description: "Desc2",
+          numEmployees: 2,
+          logoUrl: "http://c2.img",
+        },
+        {
+          handle: "c3",
+          name: "C3",
+          description: "Desc3",
+          numEmployees: 3,
+          logoUrl: "http://c3.img",
+        }
+      ]
+    });
+  });
+
+
   test("fails: test next() handler", async function () {
     // there's no normal failure event which will cause this route to fail ---
     // thus making it hard to test that the error-handler works with it. This
@@ -120,6 +146,7 @@ describe("GET /companies", function () {
       .set("authorization", `Bearer ${u1Token}`);
     expect(resp.statusCode).toEqual(500);
   });
+
 });
 
 /************************************** GET /companies/:handle */
