@@ -4,8 +4,8 @@ const { BadRequestError } = require("../expressError");
 const {
   sqlForPartialUpdate,
   sqlForCompanySearch,
-  sqlForCompanySearchByName,
-  sqlForCompanySearchByNumEmps,
+  _sqlForCompanySearchByName,
+  _sqlForCompanySearchByNumEmps,
 } = require("./sql");
 
 describe("sqlForPartialUpdate", function () {
@@ -70,63 +70,114 @@ describe("sqlForCompanySearch components", function () {
   // });
 
   test("works for search by name", function () {
-    const sqlForName = sqlForCompanySearchByName("net");
-    expect(sqlForName).toEqual([`name ILIKE '%net%'`]);
+    const objForName = _sqlForCompanySearchByName("net", 0);
+    expect(objForName).toEqual({
+      colsTemp: [`name ILIKE $1`],
+      valuesTemp: ['%net%']
+      }
+    );
+  });
+
+  test("works for search by name with offset", function () {
+    const objForName = _sqlForCompanySearchByName("net", 5);
+    expect(objForName).toEqual({
+      colsTemp: [`name ILIKE $6`],
+      valuesTemp: ['%net%']
+      }
+    );
+  });
+
+  test("fails for bad request", function () {
+    expect(function () {
+      _sqlForCompanySearchByName("", 0);
+    }).toThrow(BadRequestError);
   });
 
   test("works for search by num emps, min only", function () {
-    const sqlForEmps = sqlForCompanySearchByNumEmps({ minEmployees: 5 });
-    expect(sqlForEmps).toEqual([`num_employees >= 5`]);
+    const objForEmps = _sqlForCompanySearchByNumEmps({ minEmployees: 5 }, 0);
+    expect(objForEmps).toEqual({
+      colsTemp: [`num_employees >= $1`],
+      valuesTemp: [5]
+    });
   });
 
   test("works for search by num emps, max only", function () {
-    const sqlForEmps = sqlForCompanySearchByNumEmps({ maxEmployees: 10 });
-    expect(sqlForEmps).toEqual([`num_employees <= 10`]);
+    const objForEmps = _sqlForCompanySearchByNumEmps({ maxEmployees: 10 }, 0);
+    expect(objForEmps).toEqual({
+      colsTemp: [`num_employees <= $1`],
+      valuesTemp: [10]
+    });
   });
 
   test("works for search by num emps, min and max", function () {
-    const sqlForEmps = sqlForCompanySearchByNumEmps({
-      minEmployees: 2,
-      maxEmployees: 10,
+    const objForEmps = _sqlForCompanySearchByNumEmps(
+      {
+        minEmployees: 2,
+        maxEmployees: 10,
+      },
+      1
+    );
+    expect(objForEmps).toEqual({
+      colsTemp: [`num_employees >= $2`, `num_employees <= $3`],
+      valuesTemp: [2, 10]
     });
-    expect(sqlForEmps).toEqual([`num_employees >= 2`, `num_employees <= 10`]);
   });
 
   test("fails for search by num emps, min > max", function () {
     expect(function () {
-      sqlForCompanySearchByNumEmps({
-        minEmployees: 10,
-        maxEmployees: 1,
-      });
+      _sqlForCompanySearchByNumEmps(
+        {
+          minEmployees: 10,
+          maxEmployees: 1,
+        },
+        0
+      );
+    }).toThrow(BadRequestError);
+  });
+
+
+  test("fails for bad request", function () {
+    expect(function () {
+      _sqlForCompanySearchByNumEmps({}, 0);
     }).toThrow(BadRequestError);
   });
 });
 
 describe("sqlForCompanySearch", function () {
-  test("Given empty object returns empty string", function () {
+  test("Given empty object returns an object with correct empty values", function () {
     const result = sqlForCompanySearch({});
-    expect(result).toEqual("");
+    expect(result).toEqual({
+      searchCols: "",
+      values: []
+    });
   });
 
-  test("Given object with one property returns correct string", function () {
+  test("Given object with one property returns correct object", function () {
     const result = sqlForCompanySearch({ minEmployees: 2 });
-    expect(result).toEqual("num_employees >= 2");
+    expect(result).toEqual({
+      searchCols: "num_employees >= $1",
+      values: [2]
+    });
   });
 
-  test("Given object with one property returns correct string", function () {
+  test("Given object with one property returns correct object", function () {
     const result = sqlForCompanySearch({ nameLike: "net" });
-    expect(result).toEqual("name ILIKE '%net%'");
+    expect(result).toEqual({
+      searchCols: "name ILIKE $1",
+      values: ['%net%']
+    });
   });
 
-  test("Given object with all properties returns correct string", function () {
+  test("Given object with all properties returns correct object", function () {
     const result = sqlForCompanySearch({
       nameLike: "net",
       minEmployees: 3,
       maxEmployees: 15,
     });
-    expect(result).toEqual(
-      "name ILIKE '%net%', num_employees >= 3, num_employees <= 15"
-    );
+    expect(result).toEqual({
+      searchCols: "name ILIKE $1 AND num_employees >= $2 AND num_employees <= $3",
+      values: ['%net%', 3, 15]
+    });
   });
 
   test("fails for search by num emps, min > max", function () {

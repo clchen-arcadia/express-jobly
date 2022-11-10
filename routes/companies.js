@@ -61,11 +61,9 @@ router.post("/", ensureLoggedIn, async function (req, res, next) {
 router.get("/", async function (req, res, next) {
 
   // May have query strings like: ?nameLike=Arnold&minEmployees=2
-  debugger;
 
   let parsedUrl = url.parse(req.url);
   let parsedQs = querystring.parse(parsedUrl.query);
-
 
   // Need to parseInt for minEmployees and maxEmployees
   if (parsedQs.minEmployees !== undefined) {

@@ -12,6 +12,7 @@ const {
   commonAfterAll,
   u1Token,
 } = require("./_testCommon");
+const { BadRequestError } = require("../expressError");
 
 beforeAll(commonBeforeAll);
 beforeEach(commonBeforeEach);
@@ -113,7 +114,7 @@ describe("GET /companies", function () {
 
   test("works for filtering by numEmployees", async function () {
     const resp = await request(app).get(
-      "/companies?nameLike=c&minEmployees=2"
+      "/companies?nameLike=c&minEmployees=2&maxEmployees=100"
     );
     expect(resp.body).toEqual({
       companies: [
@@ -134,6 +135,24 @@ describe("GET /companies", function () {
       ]
     });
   });
+
+  // test("fails for invalid search term", async function () {
+  //   // try {
+  //   //   const resp = await request(app).get(
+  //   //     "/companies?termDoesNotExist=c&minEmployees=2"
+  //   //   );
+  //   //   expect(true).toBeFalsy(); // Fail the test if line reached
+  //   // }
+  //   // catch (err) {
+  //   //   console.log("test1, err is", err);
+  //   //   expect(err instanceof BadRequestError).toEqual(true);
+  //   // }
+  //   expect(async function () {
+  //     const resp = await request(app).get(
+  //           "/companies?termDoesNotExist=c&minEmployees=2"
+  //         );
+  //   }).toThrow(Error);
+  // });
 
 
   test("fails: test next() handler", async function () {

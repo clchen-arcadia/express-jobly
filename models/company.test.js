@@ -219,7 +219,9 @@ describe("remove", function () {
 
 describe("search", function () {
   test("works with search term", async function () {
-    const result = await Company.findBySearch("name ILIKE 'c1'");
+    const result = await Company.findBySearch(
+      {nameLike: 'c1'}
+      );
     expect(result).toEqual([
       {
         handle: "c1",
@@ -230,4 +232,44 @@ describe("search", function () {
       },
     ]);
   });
+
+  test("works with multiple search terms", async function () {
+    const result = await Company.findBySearch(
+      {
+        nameLike: 'c',
+        minEmployees: 2
+      }
+      );
+    expect(result).toEqual([
+      {
+        handle: "c2",
+        name: "C2",
+        description: "Desc2",
+        numEmployees: 2,
+        logoUrl: "http://c2.img",
+      },
+      {
+        handle: "c3",
+        name: "C3",
+        description: "Desc3",
+        numEmployees: 3,
+        logoUrl: "http://c3.img",
+      },
+    ]);
+  });
+
+  test("works where search excludes all companies", async function () {
+    const result = await Company.findBySearch(
+      {
+        nameLike: 'c',
+        minEmployees: 5
+      }
+      );
+    expect(result).toEqual([]);
+
+  });
+
+  // Note: search term validation not done at Model class level
+  // it is done on the route level.
+
 });

@@ -74,7 +74,7 @@ class Company {
    */
 
   static async findBySearch(queryParams) {
-    debugger;
+
     const {searchCols, values} = sqlForCompanySearch(queryParams);
 
     const querySql = `
@@ -88,7 +88,7 @@ class Company {
         ORDER BY name`;
 
     // e.g. of WHERE clause
-    // WHERE num_employees <= 10, name ILIKE '%net%'
+    // WHERE num_employees <= 10 AND name ILIKE '%net%'
 
     const companiesRes = await db.query(querySql, [...values]);
 
