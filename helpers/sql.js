@@ -31,7 +31,6 @@ const { BadRequestError } = require("../expressError");
 // NOTE: more important part is eg input and output. better than an essay.
 // btw only talk about what it does. not how it does it. but admittedly this is a complicated one
 function sqlForPartialUpdate(dataToUpdate, jsToSql) {
-
   const keys = Object.keys(dataToUpdate);
   if (keys.length === 0) throw new BadRequestError("No data");
 
@@ -53,8 +52,7 @@ function sqlForPartialUpdate(dataToUpdate, jsToSql) {
  * For searchCols postgres WHERE clauses are joined with " AND ", giving a string.
  * And values is an array of the relevant values being searched by.
  *
- * TODO: example input
- *
+ * Accepts Object like: { nameLike: "net", minEmployees: 100, maxEmployees: 500 }
  * Returns Object like: {
           searchCols (string): 'name ILIKE $1 AND num_employees >= $2',
           values (array): ["%Anderson%", 100"]
@@ -62,29 +60,29 @@ function sqlForPartialUpdate(dataToUpdate, jsToSql) {
  */
 
 function sqlForCompanySearch(queryParams) {
-
   const { minEmployees, maxEmployees, nameLike } = queryParams;
 
   let cols = [];
   let values = [];
 
   if (nameLike !== undefined) {
-
-    const { colsTemp, valuesTemp } =
-      _sqlForCompanySearchByName(nameLike, values.length);
+    const { colsTemp, valuesTemp } = _sqlForCompanySearchByName(
+      nameLike,
+      values.length
+    );
 
     cols = cols.concat(colsTemp);
     values = values.concat(valuesTemp);
   }
 
   if (minEmployees !== undefined || maxEmployees !== undefined) {
-    const { colsTemp, valuesTemp } =
-      _sqlForCompanySearchByNumEmps(
+    const { colsTemp, valuesTemp } = _sqlForCompanySearchByNumEmps(
       {
         minEmployees,
-        maxEmployees
+        maxEmployees,
       },
-      values.length);
+      values.length
+    );
 
     cols = cols.concat(colsTemp);
     values = values.concat(valuesTemp);
@@ -92,7 +90,7 @@ function sqlForCompanySearch(queryParams) {
 
   return {
     searchCols: cols.join(" AND "),
-    values: values
+    values: values,
   };
 }
 
@@ -105,12 +103,13 @@ function sqlForCompanySearch(queryParams) {
  *
  * A currentIdx is accepted, which starts the indices appropriately for parameterization.
  *
+ * Accepts Object like: { nameLike: "net" }
+ *
  * Returns Object like: {
  *    colsTemp: ['name ILIKE $1'],
  *    valuesTemp: ['%net%']
  * }
  */
-// TODO: these could be company helper methods? not "general" sql...
 function _sqlForCompanySearchByName(searchTerm, currentIdx) {
   if (searchTerm === undefined || searchTerm === "") {
     throw new BadRequestError();
@@ -119,7 +118,7 @@ function _sqlForCompanySearchByName(searchTerm, currentIdx) {
   const value = `%${searchTerm}%`;
   return {
     colsTemp: [col],
-    valuesTemp: [value]
+    valuesTemp: [value],
   };
 }
 
@@ -133,9 +132,11 @@ function _sqlForCompanySearchByName(searchTerm, currentIdx) {
  *
  * A currentIdx is accepted, which starts the indices appropriately for parameterization.
  *
+ * Accepts Object like: { minEmployees: 100, maxEmployees: 500 }
+ *
  * Returns Object like: {
  *    searchCols: ['num_employees >= $1', 'num_employees <= $2'],
- *    values: [100, 200]
+ *    values: [100, 500]
  * }
  */
 function _sqlForCompanySearchByNumEmps(conditions, currentIdx) {
@@ -144,7 +145,7 @@ function _sqlForCompanySearchByNumEmps(conditions, currentIdx) {
     throw new BadRequestError();
   }
   if (minEmployees > maxEmployees) {
-    throw new BadRequestError("minEmployees can't be larger than maxEmployees"); //TODO: add msg!
+    throw new BadRequestError("minEmployees cannot be larger than maxEmployees");
   }
 
   const searchCols = [];
@@ -163,7 +164,7 @@ function _sqlForCompanySearchByNumEmps(conditions, currentIdx) {
 
   return {
     colsTemp: searchCols,
-    valuesTemp: values
+    valuesTemp: values,
   };
 }
 
@@ -171,5 +172,5 @@ module.exports = {
   sqlForPartialUpdate,
   sqlForCompanySearch,
   _sqlForCompanySearchByName,
-  _sqlForCompanySearchByNumEmps
+  _sqlForCompanySearchByNumEmps,
 };
