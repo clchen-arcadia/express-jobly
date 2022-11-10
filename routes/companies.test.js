@@ -11,6 +11,7 @@ const {
   commonAfterEach,
   commonAfterAll,
   u1Token,
+  adminToken,
 } = require("./_testCommon");
 const { BadRequestError } = require("../expressError");
 
@@ -30,11 +31,26 @@ describe("POST /companies", function () {
     numEmployees: 10,
   };
 
-  test("ok for users", async function () {
+  test("not ok for non-admin users", async function () {
     const resp = await request(app)
       .post("/companies")
       .send(newCompany)
       .set("authorization", `Bearer ${u1Token}`);
+    expect(resp.statusCode).toEqual(403);
+    expect(resp.body).toEqual({});
+  });
+
+  test("not ok for anonymous users", async function () {
+    const resp = await request(app).post("/companies").send(newCompany);
+    expect(resp.statusCode).toEqual(401);
+    expect(resp.body).toEqual({});
+  });
+
+  test("Ok for admin users", async function () {
+    const resp = await request(app)
+      .post("/companies")
+      .send(newCompany)
+      .set("authorization", `Bearer ${adminToken}`);
     expect(resp.statusCode).toEqual(201);
     expect(resp.body).toEqual({
       company: newCompany,
@@ -112,7 +128,6 @@ describe("GET /companies", function () {
     expect(resp.status).toEqual(200);
   });
 
-
   test("works for filtering by numEmployees", async function () {
     const resp = await request(app).get(
       "/companies?nameLike=c&minEmployees=2&maxEmployees=100"
@@ -133,8 +148,8 @@ describe("GET /companies", function () {
           description: "Desc3",
           numEmployees: 3,
           logoUrl: "http://c3.img",
-        }
-      ]
+        },
+      ],
     });
   });
 
@@ -144,10 +159,9 @@ describe("GET /companies", function () {
     );
     expect(resp.error.status).toEqual(400);
     expect(resp.error.message[0]).toEqual(
-      "instance is not allowed to have the additional property \"termDoesNotExist\""
+      'instance is not allowed to have the additional property "termDoesNotExist"'
     );
   });
-
 
   test("fails: test next() handler", async function () {
     // there's no normal failure event which will cause this route to fail ---
@@ -159,7 +173,6 @@ describe("GET /companies", function () {
       .set("authorization", `Bearer ${u1Token}`);
     expect(resp.statusCode).toEqual(500);
   });
-
 });
 
 /************************************** GET /companies/:handle */
@@ -200,13 +213,24 @@ describe("GET /companies/:handle", function () {
 /************************************** PATCH /companies/:handle */
 
 describe("PATCH /companies/:handle", function () {
-  test("works for users", async function () {
+  test("not auth for non-admin users", async function () {
     const resp = await request(app)
       .patch(`/companies/c1`)
       .send({
         name: "C1-new",
       })
       .set("authorization", `Bearer ${u1Token}`);
+    expect(resp.body).toEqual({});
+    expect(resp.statusCode).toEqual(403);
+  });
+
+  test("works for admins", async function () {
+    const resp = await request(app)
+      .patch(`/companies/c1`)
+      .send({
+        name: "C1-new",
+      })
+      .set("authorization", `Bearer ${adminToken}`);
     expect(resp.body).toEqual({
       company: {
         handle: "c1",
@@ -259,10 +283,18 @@ describe("PATCH /companies/:handle", function () {
 /************************************** DELETE /companies/:handle */
 
 describe("DELETE /companies/:handle", function () {
-  test("works for users", async function () {
+  test("not auth for non-admin users", async function () {
     const resp = await request(app)
       .delete(`/companies/c1`)
       .set("authorization", `Bearer ${u1Token}`);
+    expect(resp.body).toEqual({});
+    expect(resp.statusCode).toEqual(403);
+  });
+
+  test("works for admin", async function () {
+    const resp = await request(app)
+      .delete(`/companies/c1`)
+      .set("authorization", `Bearer ${adminToken}`);
     expect(resp.body).toEqual({ deleted: "c1" });
   });
 
