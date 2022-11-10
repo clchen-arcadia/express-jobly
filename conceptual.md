@@ -1,14 +1,3 @@
-current problems. TWO PROBLEMS
-
-ONE
-CANNOT SELECT WHERE '%$1%'
-
-must be WHERE name ILIKE $1
-and in paramaterization do the percents ['% name %']
-
-TWO
-second problme. "currentIdx" not being manipulated, not incrementing
-
-we saw
-
-WHERE name ILIKE $1, num_employees >= $1
+Next steps:
+Check if current user is admin (probably middleware)
+Check if current user is correct user (maybe not middleware can check on route)
