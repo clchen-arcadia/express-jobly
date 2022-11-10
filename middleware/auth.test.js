@@ -1,7 +1,7 @@
 "use strict";
 
 const jwt = require("jsonwebtoken");
-const { UnauthorizedError } = require("../expressError");
+const { UnauthorizedError, ForbiddenError } = require("../expressError");
 const {
   authenticateJWT,
   ensureLoggedIn,
@@ -59,3 +59,9 @@ describe("ensureLoggedIn", function () {
     expect(() => ensureLoggedIn(req, res, next, next)).toThrowError();
   });
 });
+
+describe("ForbiddenError is working", function(){
+  expect(function() {
+    throw new ForbiddenError();
+  }).toThrow(ForbiddenError);
+})
