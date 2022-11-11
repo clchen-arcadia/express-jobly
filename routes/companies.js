@@ -5,7 +5,7 @@
 const jsonschema = require("jsonschema");
 const express = require("express");
 
-const { BadRequestError, ForbiddenError } = require("../expressError");
+const { BadRequestError } = require("../expressError");
 const { ensureLoggedIn, ensureAdmin } = require("../middleware/auth");
 const Company = require("../models/company");
 
@@ -15,7 +15,7 @@ const companySearchSchema = require("../schemas/companySearch.json");
 const { findBySearch } = require("../models/company");
 const { sqlForCompanySearch } = require("../helpers/sql");
 
-// code injection
+// code injection NOTE: refactoring while using req.query is possible!
 const url = require('url');
 const querystring = require('querystring');
 
@@ -32,7 +32,7 @@ const router = new express.Router();
  * Authorization required: is_admin
  */
 
-router.post("/", ensureLoggedIn, ensureAdmin, async function (req, res, next) {
+router.post("/", ensureAdmin, async function (req, res, next) {
   const validator = jsonschema.validate(
     req.body,
     companyNewSchema,
@@ -61,11 +61,10 @@ router.post("/", ensureLoggedIn, ensureAdmin, async function (req, res, next) {
 router.get("/", async function (req, res, next) {
 
   // May have query strings like: ?nameLike=Arnold&minEmployees=2
-  // debugger;
-  // console.log("test-----", req.query);
+
+  // Note: refactor to using req.query is possible
   let parsedUrl = url.parse(req.url);
   let parsedQs = querystring.parse(parsedUrl.query);
-  //req.query...? ---> it exists!! think about this for later...
 
   // Need to parseInt for minEmployees and maxEmployees
   if (parsedQs.minEmployees !== undefined) {
@@ -120,7 +119,7 @@ router.get("/:handle", async function (req, res, next) {
  * Authorization required: is_admin
  */
 
-router.patch("/:handle", ensureLoggedIn, ensureAdmin, async function (req, res, next) {
+router.patch("/:handle", ensureAdmin, async function (req, res, next) {
   const validator = jsonschema.validate(
     req.body,
     companyUpdateSchema,
@@ -140,7 +139,7 @@ router.patch("/:handle", ensureLoggedIn, ensureAdmin, async function (req, res, 
  * Authorization: is_admin
  */
 
-router.delete("/:handle", ensureLoggedIn, ensureAdmin, async function (req, res, next) {
+router.delete("/:handle", ensureAdmin, async function (req, res, next) {
   await Company.remove(req.params.handle);
   return res.json({ deleted: req.params.handle });
 });

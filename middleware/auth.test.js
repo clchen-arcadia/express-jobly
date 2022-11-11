@@ -5,6 +5,8 @@ const { UnauthorizedError, ForbiddenError } = require("../expressError");
 const {
   authenticateJWT,
   ensureLoggedIn,
+  ensureAdmin,
+  ensureAdminOrSelf,
 } = require("./auth");
 
 
@@ -56,14 +58,73 @@ describe("ensureLoggedIn", function () {
   test("unauth if no login", function () {
     const req = {};
     const res = { locals: {} };
-    expect(() => ensureLoggedIn(req, res, next, next)).toThrowError();
+    expect(() => ensureLoggedIn(req, res, next, next)).toThrowError(UnauthorizedError);
   });
 });
 
-describe("ForbiddenError is working", function(){
-  expect(function() {
+describe("ForbiddenError is working", function () {
+  expect(function () {
     throw new ForbiddenError();
   }).toThrow(ForbiddenError);
-})
-//TODO: Wants tests specifically for middleware functions as well
-//* Also third middleware function once it is written
+});
+
+describe("ensureAdmin", function () {
+  test("works", function () {
+    const req = {};
+    const res = { locals: { user: { username: "test", isAdmin: true } } };
+    ensureAdmin(req, res, next);
+  });
+
+  test("unauth if no login", function () {
+    const req = {};
+    const res = { locals: {} };
+    expect(function () {
+      ensureAdmin(req, res, next);
+    }).toThrowError(UnauthorizedError);
+  });
+
+  test("unauth if not admin", function () {
+    const req = {};
+    const res = { locals: { user: { username: 'test', isAdmin: false } } };
+    expect(function () {
+      ensureAdmin(req, res, next);
+    }).toThrowError(UnauthorizedError);
+  });
+});
+
+
+describe("ensureAdminOrSelf", function () {
+  test("works", function () {
+    const req = { params: { username: "test1" } };
+    const res = { locals: { user: { username: "test1", isAdmin: true } } };
+    ensureAdminOrSelf(req, res, next);
+  });
+
+  test("unauth if no login", function () {
+    const req = { params: { username: "test1" } };
+    const res = { locals: {} };
+    expect(function () {
+      ensureAdminOrSelf(req, res, next);
+    }).toThrowError(UnauthorizedError);
+  });
+
+  test("ok if admin", function () {
+    const req = { params: { username: "test1" } };
+    const res = { locals: { user: { username: 'admin', isAdmin: true } } };
+    ensureAdminOrSelf(req, res, next);
+  });
+
+  test("ok if is self", function () {
+    const req = { params: { username: "test1" } };
+    const res = { locals: { user: { username: 'test1', isAdmin: false } } };
+    ensureAdminOrSelf(req, res, next);
+  });
+
+  test("unauth if neither admin nor self", function () {
+    const req = { params: { username: "test1" } };
+    const res = { locals: { user: { username: 'test2', isAdmin: false } } };
+    expect(function () {
+      ensureAdminOrSelf(req, res, next);
+    }).toThrowError(UnauthorizedError);
+  });
+});

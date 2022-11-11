@@ -5,8 +5,8 @@
 const jsonschema = require("jsonschema");
 
 const express = require("express");
-const { ensureLoggedIn, ensureAdmin } = require("../middleware/auth");
-const { BadRequestError, ForbiddenError } = require("../expressError");
+const { ensureLoggedIn, ensureAdmin, ensureAdminOrSelf } = require("../middleware/auth");
+const { BadRequestError } = require("../expressError");
 const User = require("../models/user");
 const { createToken } = require("../helpers/tokens");
 const userNewSchema = require("../schemas/userNew.json");
@@ -26,7 +26,7 @@ const router = express.Router();
  * Authorization required: is_admin
  **/
 
-router.post("/", ensureLoggedIn, ensureAdmin, async function (req, res, next) {
+router.post("/", ensureAdmin, async function (req, res, next) {
   const validator = jsonschema.validate(req.body, userNewSchema, {
     required: true,
   });
@@ -47,7 +47,7 @@ router.post("/", ensureLoggedIn, ensureAdmin, async function (req, res, next) {
  * Authorization required: is_admin
  **/
 
-router.get("/", ensureLoggedIn, ensureAdmin, async function (req, res, next) {
+router.get("/", ensureAdmin, async function (req, res, next) {
   const users = await User.findAll();
   return res.json({ users });
 });
@@ -59,17 +59,9 @@ router.get("/", ensureLoggedIn, ensureAdmin, async function (req, res, next) {
  * Authorization required: is_correct_user or is_admin
  **/
 
-router.get("/:username", ensureLoggedIn, async function (req, res, next) {
-  const username = req.params.username;
-  if (
-    res.locals.user.username === username ||
-    res.locals.user.isAdmin === true
-  ) {
-    const user = await User.get(username);
-    return res.json({ user });
-  } else {
-    throw new ForbiddenError();
-  }
+router.get("/:username", ensureAdminOrSelf, async function (req, res, next) {
+  const user = await User.get(req.params.username);
+  return res.json({ user });
 });
 
 /** PATCH /[username] { user } => { user }
@@ -82,28 +74,20 @@ router.get("/:username", ensureLoggedIn, async function (req, res, next) {
  * Authorization required: is_correct_user or is_admin
  **/
 
-router.patch("/:username", ensureLoggedIn, async function (req, res, next) {
-  const username = req.params.username;
-  //TODO: Add middleware to check if admin or correct user logged in
-  //* Want to avoid repetition especially with authentication
-  //* Want one place to change to avoid missing a route (no mistakes)
-  if (
-    res.locals.user.username === username ||
-    res.locals.user.isAdmin === true
-  ) {
-    const validator = jsonschema.validate(req.body, userUpdateSchema, {
-      required: true,
-    });
-    if (!validator.valid) {
-      const errs = validator.errors.map((e) => e.stack);
-      throw new BadRequestError(errs);
-    }
-    const user = await User.update(req.params.username, req.body);
-    return res.json({ user });
-  } else {
-    throw new ForbiddenError(); //TODO: Should be using unauthorized instead
-    //* FORBIDDEN "This is not a route where anyone can/should access!"
+router.patch("/:username", ensureAdminOrSelf, async function (req, res, next) {
+  const validator = jsonschema.validate(
+    req.body,
+    userUpdateSchema,
+    { required: true }
+  );
+
+  if (!validator.valid) {
+    const errs = validator.errors.map((e) => e.stack);
+    throw new BadRequestError(errs);
   }
+
+  const user = await User.update(req.params.username, req.body);
+  return res.json({ user });
 });
 
 /** DELETE /[username]  =>  { deleted: username }
@@ -111,17 +95,9 @@ router.patch("/:username", ensureLoggedIn, async function (req, res, next) {
  * Authorization required: is_correct_user or is_admin
  **/
 
-router.delete("/:username", ensureLoggedIn, async function (req, res, next) {
-  const username = req.params.username;
-  if (
-    res.locals.user.username === username ||
-    res.locals.user.isAdmin === true
-  ) {
-    await User.remove(req.params.username);
-    return res.json({ deleted: req.params.username });
-  } else {
-    throw new ForbiddenError();
-  }
+router.delete("/:username", ensureAdminOrSelf, async function (req, res, next) {
+  await User.remove(req.params.username);
+  return res.json({ deleted: req.params.username });
 });
 
 module.exports = router;
