@@ -37,7 +37,6 @@ describe("POST /users", function () {
       })
       .set("authorization", `Bearer ${u1Token}`);
     expect(resp.statusCode).toEqual(403);
-    expect(resp.body).toEqual({});
   });
 
   test("works for admin: create admin or non-admin", async function () {
@@ -83,7 +82,7 @@ describe("POST /users", function () {
       .send({
         username: "u-new",
       })
-      .set("authorization", `Bearer ${u1Token}`);
+      .set("authorization", `Bearer ${adminToken}`);
     expect(resp.statusCode).toEqual(400);
   });
 
@@ -98,7 +97,7 @@ describe("POST /users", function () {
         email: "not-an-email",
         isAdmin: true,
       })
-      .set("authorization", `Bearer ${u1Token}`);
+      .set("authorization", `Bearer ${adminToken}`);
     expect(resp.statusCode).toEqual(400);
   });
 });
@@ -117,7 +116,6 @@ describe("GET /users", function () {
           firstName: "adminF",
           lastName: "adminL",
           email: "admin@user.com",
-          password: "adminpassword",
           isAdmin: true,
         },
         {
@@ -149,7 +147,6 @@ describe("GET /users", function () {
     const resp = await request(app)
       .get("/users")
       .set("authorization", `Bearer ${u1Token}`);
-    expect(resp.body).toEqual({});
     expect(resp.statusCode).toEqual(403);
   });
 
@@ -165,7 +162,7 @@ describe("GET /users", function () {
     await db.query("DROP TABLE users CASCADE");
     const resp = await request(app)
       .get("/users")
-      .set("authorization", `Bearer ${u1Token}`);
+      .set("authorization", `Bearer ${adminToken}`);
     expect(resp.statusCode).toEqual(500);
   });
 });
@@ -207,7 +204,6 @@ describe("GET /users/:username", function () {
     const resp = await request(app)
       .get(`/users/u1`)
       .set("authorization", `Bearer ${u2Token}`);
-    expect(resp.body).toEqual({});
     expect(resp.statusCode).toEqual(403);
   });
 
@@ -219,7 +215,7 @@ describe("GET /users/:username", function () {
   test("not found if user not found", async function () {
     const resp = await request(app)
       .get(`/users/nope`)
-      .set("authorization", `Bearer ${u1Token}`);
+      .set("authorization", `Bearer ${adminToken}`);
     expect(resp.statusCode).toEqual(404);
   });
 });
@@ -270,7 +266,6 @@ describe("PATCH /users/:username", () => {
         firstName: "New",
       })
       .set("authorization", `Bearer ${u2Token}`);
-    expect(resp.body).toEqual({});
     expect(resp.statusCode).toEqual(403);
   });
 
@@ -287,7 +282,7 @@ describe("PATCH /users/:username", () => {
       .send({
         firstName: "Nope",
       })
-      .set("authorization", `Bearer ${u1Token}`);
+      .set("authorization", `Bearer ${adminToken}`);
     expect(resp.statusCode).toEqual(404);
   });
 
@@ -297,7 +292,7 @@ describe("PATCH /users/:username", () => {
       .send({
         firstName: 42,
       })
-      .set("authorization", `Bearer ${u1Token}`);
+      .set("authorization", `Bearer ${adminToken}`);
     expect(resp.statusCode).toEqual(400);
   });
 
@@ -343,7 +338,6 @@ describe("DELETE /users/:username", function () {
     const resp = await request(app)
       .delete(`/users/u1`)
       .set("authorization", `Bearer ${u2Token}`);
-    expect(resp.body).toEqual({});
     expect(resp.statusCode).toEqual(403);
   });
 
@@ -355,7 +349,7 @@ describe("DELETE /users/:username", function () {
   test("not found if user missing", async function () {
     const resp = await request(app)
       .delete(`/users/nope`)
-      .set("authorization", `Bearer ${u1Token}`);
+      .set("authorization", `Bearer ${adminToken}`);
     expect(resp.statusCode).toEqual(404);
   });
 });

@@ -37,13 +37,11 @@ describe("POST /companies", function () {
       .send(newCompany)
       .set("authorization", `Bearer ${u1Token}`);
     expect(resp.statusCode).toEqual(403);
-    expect(resp.body).toEqual({});
   });
 
   test("not ok for anonymous users", async function () {
     const resp = await request(app).post("/companies").send(newCompany);
     expect(resp.statusCode).toEqual(401);
-    expect(resp.body).toEqual({});
   });
 
   test("Ok for admin users", async function () {
@@ -64,7 +62,7 @@ describe("POST /companies", function () {
         handle: "new",
         numEmployees: 10,
       })
-      .set("authorization", `Bearer ${u1Token}`);
+      .set("authorization", `Bearer ${adminToken}`);
     expect(resp.statusCode).toEqual(400);
   });
 
@@ -75,7 +73,7 @@ describe("POST /companies", function () {
         ...newCompany,
         logoUrl: "not-a-url",
       })
-      .set("authorization", `Bearer ${u1Token}`);
+      .set("authorization", `Bearer ${adminToken}`);
     expect(resp.statusCode).toEqual(400);
   });
 });
@@ -158,9 +156,6 @@ describe("GET /companies", function () {
       "/companies?termDoesNotExist=c&minEmployees=2"
     );
     expect(resp.error.status).toEqual(400);
-    expect(resp.error.message[0]).toEqual(
-      'instance is not allowed to have the additional property "termDoesNotExist"'
-    );
   });
 
   test("fails: test next() handler", async function () {
@@ -220,7 +215,6 @@ describe("PATCH /companies/:handle", function () {
         name: "C1-new",
       })
       .set("authorization", `Bearer ${u1Token}`);
-    expect(resp.body).toEqual({});
     expect(resp.statusCode).toEqual(403);
   });
 
@@ -255,7 +249,7 @@ describe("PATCH /companies/:handle", function () {
       .send({
         name: "new nope",
       })
-      .set("authorization", `Bearer ${u1Token}`);
+      .set("authorization", `Bearer ${adminToken}`);
     expect(resp.statusCode).toEqual(404);
   });
 
@@ -265,7 +259,7 @@ describe("PATCH /companies/:handle", function () {
       .send({
         handle: "c1-new",
       })
-      .set("authorization", `Bearer ${u1Token}`);
+      .set("authorization", `Bearer ${adminToken}`);
     expect(resp.statusCode).toEqual(400);
   });
 
@@ -275,7 +269,7 @@ describe("PATCH /companies/:handle", function () {
       .send({
         logoUrl: "not-a-url",
       })
-      .set("authorization", `Bearer ${u1Token}`);
+      .set("authorization", `Bearer ${adminToken}`);
     expect(resp.statusCode).toEqual(400);
   });
 });
@@ -287,7 +281,6 @@ describe("DELETE /companies/:handle", function () {
     const resp = await request(app)
       .delete(`/companies/c1`)
       .set("authorization", `Bearer ${u1Token}`);
-    expect(resp.body).toEqual({});
     expect(resp.statusCode).toEqual(403);
   });
 
@@ -306,7 +299,7 @@ describe("DELETE /companies/:handle", function () {
   test("not found for no such company", async function () {
     const resp = await request(app)
       .delete(`/companies/nope`)
-      .set("authorization", `Bearer ${u1Token}`);
+      .set("authorization", `Bearer ${adminToken}`);
     expect(resp.statusCode).toEqual(404);
   });
 });

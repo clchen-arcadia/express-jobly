@@ -4,7 +4,7 @@
 
 const jwt = require("jsonwebtoken");
 const { SECRET_KEY } = require("../config");
-const { UnauthorizedError } = require("../expressError");
+const { UnauthorizedError, ForbiddenError } = require("../expressError");
 
 
 /** Middleware: Authenticate user.
@@ -18,17 +18,24 @@ const { UnauthorizedError } = require("../expressError");
 function authenticateJWT(req, res, next) {
   try {
     const authHeader = req.headers && req.headers.authorization;
-    console.log("TESTONEEEEEEEEEEEEE", authHeader);
     if (authHeader) {
       const token = authHeader.replace(/^[Bb]earer /, "").trim();
-      console.log("TESTTWOOOOOOOOOOOOOO", token);
       res.locals.user = jwt.verify(token, SECRET_KEY);
-      console.log("TESTTHREEEEEEEEEE", res.locals.user);
     }
     return next();
   } catch (err) {
     return next();
   }
+}
+
+/** Middleware to ensure they are logged in as an admin user.
+ *
+ * If not, raises Forbidden.
+ */
+
+function ensureAdmin(req, res, next) {
+    if (!res.locals.user.isAdmin) throw new ForbiddenError();
+    return next();
 }
 
 /** Middleware to use when they must be logged in.
@@ -44,5 +51,6 @@ function ensureLoggedIn(req, res, next) {
 
 module.exports = {
   authenticateJWT,
-  ensureLoggedIn,
+  ensureAdmin,
+  ensureLoggedIn
 };
