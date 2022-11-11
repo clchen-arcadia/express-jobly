@@ -19,11 +19,10 @@ class Job {
   static async create({ title, salary, equity, company_handle }) {
 
     const result = await db.query(
-        `INSERT INTO jobs(
-          title,
-          salary,
-          equity,
-          company_handle)
+        `INSERT INTO jobs(title,
+                          salary,
+                          equity,
+                          company_handle)
            VALUES
             ($1, $2, $3, $4)
            RETURNING
@@ -31,7 +30,7 @@ class Job {
             title,
             salary,
             equity,
-            company_handle AS "companyHandle"`
+            company_handle AS "companyHandle"`,
         [
           title,
           salary,
@@ -109,7 +108,7 @@ class Job {
 
     const job = jobRes.rows[0];
 
-    if (!job) throw new NotFoundError(`No job id: ${handle}`);
+    if (!job) throw new NotFoundError(`No job id: ${id}`);
 
     return job;
   }
@@ -137,7 +136,7 @@ class Job {
     const querySql = `
       UPDATE jobs
       SET ${setCols}
-        WHERE handle = ${idVarIdx}
+        WHERE id = ${idVarIdx}
         RETURNING
           id,
           title,
