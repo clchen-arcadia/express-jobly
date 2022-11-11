@@ -29,6 +29,7 @@ TODO LIST
 2. rewrite tests for auth.js middleware --- DONE
 3. rewrite tests for users.test.js --- DONE
 4. rewrite tests for companies.test.js --- DONE
+5. Sanitize inputs to avoid crashing PostgresQL --- NOT DONE
 
 theNNN
 

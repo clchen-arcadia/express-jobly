@@ -16,7 +16,7 @@ class Job {
    * Throws BadRequestError if attempt to change job ID.
    * */
 
-  static async create({ title, salary, equity, company_handle }) {
+  static async create({ title, salary, equity, companyHandle }) {
 
     const result = await db.query(
         `INSERT INTO jobs(title,
@@ -35,7 +35,7 @@ class Job {
           title,
           salary,
           equity,
-          company_handle
+          companyHandle
         ],
     );
     const job = result.rows[0];

@@ -28,7 +28,7 @@ describe("POST /jobs", function () {
     title: "newJob",
     salary: 123456,
     equity: 0.01,
-    company_handle: "c1",
+    companyHandle: "c1",
   };
 
   test("unauth for non-admin users", async function () {
@@ -56,7 +56,7 @@ describe("POST /jobs", function () {
         title: "newJob",
         salary: 123456,
         equity: "0.01",
-        company_handle: "c1",
+        companyHandle: "c1",
       },
     });
   });
@@ -261,9 +261,9 @@ describe("PATCH /jobs/:id", function () {
 
   test("not found on no such job for admin", async function () {
     const resp = await request(app)
-      .patch(`/jobs/nope`)
+      .patch(`/jobs/42`)
       .send({
-        name: "new nope",
+        title: "new nope",
       })
       .set("authorization", `Bearer ${adminToken}`);
     expect(resp.statusCode).toEqual(404);
@@ -271,9 +271,9 @@ describe("PATCH /jobs/:id", function () {
 
   test("unauth on no such job for non-admin", async function () {
     const resp = await request(app)
-      .patch(`/jobs/nope`)
+      .patch(`/jobs/42`)
       .send({
-        name: "new nope",
+        title: "new nope",
       })
       .set("authorization", `Bearer ${u1Token}`);
     expect(resp.statusCode).toEqual(401);
@@ -334,7 +334,7 @@ describe("DELETE /jobs/:id", function () {
     const resp = await request(app)
       .delete(`/jobs/1`)
       .set("authorization", `Bearer ${adminToken}`);
-    expect(resp.body).toEqual({ deleted: 1 });
+    expect(resp.body).toEqual({ deleted: "1" });
   });
 
   test("unauth for anon", async function () {
@@ -344,20 +344,20 @@ describe("DELETE /jobs/:id", function () {
 
   test("not found for no such job for admin", async function () {
     const resp = await request(app)
-      .delete(`/jobs/nope`)
+      .delete(`/jobs/42`)
       .set("authorization", `Bearer ${adminToken}`);
     expect(resp.statusCode).toEqual(404);
   });
 
   test("unauth for no such job for non-admin", async function () {
     const resp = await request(app)
-      .delete(`/jobs/nope`)
+      .delete(`/jobs/42`)
       .set("authorization", `Bearer ${u1Token}`);
     expect(resp.statusCode).toEqual(401);
   });
 
   test("unauth for no such job for anon", async function () {
-    const resp = await request(app).delete(`/jobs/nope`);
+    const resp = await request(app).delete(`/jobs/42`);
     expect(resp.statusCode).toEqual(401);
   });
 });
