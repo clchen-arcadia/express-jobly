@@ -28,10 +28,18 @@ TODO LIST
 1. refactor with all authorization in middleware --- DONE
 2. rewrite tests for auth.js middleware --- DONE
 3. rewrite tests for users.test.js --- DONE
-4. rewrite tests for companies.test.js --- NOT DONE YET ---- TOIDOOOOOOO
+4. rewrite tests for companies.test.js --- DONE
 
 theNNN
 
 move on...
 
 to PART 4. electric boogaloo.
+
+jobs reference company_handle
+
+applications reference job_id and user_username
+
+query NUMERIC type --> postgres returns STRING! this is to remind you of its perfect precision to the relevant decimal place!
+don't let it get into a non-NUMERIC type when put into some other language
+
