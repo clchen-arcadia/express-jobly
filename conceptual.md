@@ -1,4 +1,4 @@
-refcatoring to do
+refactoring to do
 esp concerning middleware --> move ALL author. to middleware
 
 
@@ -14,14 +14,15 @@ why do they do NUMERIC field type? it must be because it has perfect precision
 
 
 IMPLEMENTING JOBS
-write the model
-model unittests
-write the routes
-route integration tests
-
+    write the model
+    model unit-tests
+    write the routes
+    route integration tests
 
 THEN add filtering! similar to companies.
 
+IMPLEMENTING JOB APPLICATIONS
+    ...
 
 TODO LIST
 1. refactor with all authorization in middleware --- DONE
@@ -33,4 +34,4 @@ theNNN
 
 move on...
 
-to PART 4. electric boogaloo. 
+to PART 4. electric boogaloo.
