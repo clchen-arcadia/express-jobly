@@ -38,7 +38,7 @@ describe("POST /users", function () {
       .set("authorization", `Bearer ${u1Token}`);
     expect(resp.statusCode).toEqual(403);
   });
-
+  //TODO: Another test for creating non-admin (two tests)
   test("works for admin: create admin or non-admin", async function () {
     const resp = await request(app)
       .post("/users")
@@ -85,7 +85,7 @@ describe("POST /users", function () {
       .set("authorization", `Bearer ${adminToken}`);
     expect(resp.statusCode).toEqual(400);
   });
-
+  //TODO: "Bad request if invalid data for admin"
   test("bad request if invalid data", async function () {
     const resp = await request(app)
       .post("/users")
@@ -211,7 +211,7 @@ describe("GET /users/:username", function () {
     const resp = await request(app).get(`/users/u1`);
     expect(resp.statusCode).toEqual(401);
   });
-
+  //TODO: "Not found if user not found for admin"
   test("not found if user not found", async function () {
     const resp = await request(app)
       .get(`/users/nope`)
@@ -275,7 +275,7 @@ describe("PATCH /users/:username", () => {
     });
     expect(resp.statusCode).toEqual(401);
   });
-
+  //TODO: "Not found if no such user for admin"
   test("not found if no such user", async function () {
     const resp = await request(app)
       .patch(`/users/nope`)
@@ -285,7 +285,7 @@ describe("PATCH /users/:username", () => {
       .set("authorization", `Bearer ${adminToken}`);
     expect(resp.statusCode).toEqual(404);
   });
-
+  //TODO: "Bad request if invalid data for admin"
   test("bad request if invalid data", async function () {
     const resp = await request(app)
       .patch(`/users/u1`)
@@ -345,7 +345,7 @@ describe("DELETE /users/:username", function () {
     const resp = await request(app).delete(`/users/u1`);
     expect(resp.statusCode).toEqual(401);
   });
-
+  //TODO: "Not found if user missing for admin"
   test("not found if user missing", async function () {
     const resp = await request(app)
       .delete(`/users/nope`)

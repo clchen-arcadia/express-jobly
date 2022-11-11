@@ -30,7 +30,7 @@ describe("POST /companies", function () {
     description: "DescNew",
     numEmployees: 10,
   };
-
+  //TODO: Specify why not ok i.e. not authorized
   test("not ok for non-admin users", async function () {
     const resp = await request(app)
       .post("/companies")
@@ -54,7 +54,8 @@ describe("POST /companies", function () {
       company: newCompany,
     });
   });
-
+  //TODO: "Bad request with missing data for admin"
+  //TODO: Add non-admin missing data test, should get unauthorized and not bad request error
   test("bad request with missing data", async function () {
     const resp = await request(app)
       .post("/companies")
@@ -156,6 +157,7 @@ describe("GET /companies", function () {
       "/companies?termDoesNotExist=c&minEmployees=2"
     );
     expect(resp.error.status).toEqual(400);
+    //TODO: Can check with debugger
   });
 
   test("fails: test next() handler", async function () {
@@ -217,7 +219,7 @@ describe("PATCH /companies/:handle", function () {
       .set("authorization", `Bearer ${u1Token}`);
     expect(resp.statusCode).toEqual(403);
   });
-
+  //TODO: Check for status code to be consistent with other tests (code 200)
   test("works for admins", async function () {
     const resp = await request(app)
       .patch(`/companies/c1`)
@@ -242,7 +244,7 @@ describe("PATCH /companies/:handle", function () {
     });
     expect(resp.statusCode).toEqual(401);
   });
-
+  //TODO: "Not found on no such company for admin"
   test("not found on no such company", async function () {
     const resp = await request(app)
       .patch(`/companies/nope`)
@@ -295,7 +297,7 @@ describe("DELETE /companies/:handle", function () {
     const resp = await request(app).delete(`/companies/c1`);
     expect(resp.statusCode).toEqual(401);
   });
-
+  //TODO: Not found for no such company for admin (similar pattern)
   test("not found for no such company", async function () {
     const resp = await request(app)
       .delete(`/companies/nope`)

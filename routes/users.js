@@ -84,6 +84,9 @@ router.get("/:username", ensureLoggedIn, async function (req, res, next) {
 
 router.patch("/:username", ensureLoggedIn, async function (req, res, next) {
   const username = req.params.username;
+  //TODO: Add middleware to check if admin or correct user logged in
+  //* Want to avoid repetition especially with authentication
+  //* Want one place to change to avoid missing a route (no mistakes)
   if (
     res.locals.user.username === username ||
     res.locals.user.isAdmin === true
@@ -98,7 +101,8 @@ router.patch("/:username", ensureLoggedIn, async function (req, res, next) {
     const user = await User.update(req.params.username, req.body);
     return res.json({ user });
   } else {
-    throw new ForbiddenError();
+    throw new ForbiddenError(); //TODO: Should be using unauthorized instead
+    //* FORBIDDEN "This is not a route where anyone can/should access!"
   }
 });
 

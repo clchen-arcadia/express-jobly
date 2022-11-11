@@ -65,3 +65,5 @@ describe("ForbiddenError is working", function(){
     throw new ForbiddenError();
   }).toThrow(ForbiddenError);
 })
+//TODO: Wants tests specifically for middleware functions as well
+//* Also third middleware function once it is written
