@@ -137,54 +137,70 @@ describe("GET /jobs", function () {
     });
   });
 
-  //TODO: Must implement job search functionality!
-  // test("works for filtering by name", async function () {
-  //   const resp = await request(app).get("/companies?nameLike=c1");
-  //   expect(resp.body).toEqual({
-  //     companies: [
-  //       {
-  //         handle: "c1",
-  //         name: "C1",
-  //         description: "Desc1",
-  //         numEmployees: 1,
-  //         logoUrl: "http://c1.img",
-  //       },
-  //     ],
-  //   });
-  //   expect(resp.status).toEqual(200);
-  // });
+  test("works for filtering by title", async function () {
+    const resp = await request(app).get("/jobs?title=j3");
+    expect(resp.body).toEqual({
+      jobs: [
+        {
+          id: 3,
+          title: "j3",
+          salary: 300000,
+          equity: '0',
+          companyHandle: 'c2',
+        },
+      ],
+    });
+    expect(resp.status).toEqual(200);
+  });
 
-  // test("works for filtering by numEmployees", async function () {
-  //   const resp = await request(app).get(
-  //     "/companies?nameLike=c&minEmployees=2&maxEmployees=100"
-  //   );
-  //   expect(resp.status).toEqual(200);
-  //   expect(resp.body).toEqual({
-  //     companies: [
-  //       {
-  //         handle: "c2",
-  //         name: "C2",
-  //         description: "Desc2",
-  //         numEmployees: 2,
-  //         logoUrl: "http://c2.img",
-  //       },
-  //       {
-  //         handle: "c3",
-  //         name: "C3",
-  //         description: "Desc3",
-  //         numEmployees: 3,
-  //         logoUrl: "http://c3.img",
-  //       },
-  //     ],
-  //   });
-  // });
+  test("works for filtering by hasEquity", async function () {
+    const resp = await request(app).get("/jobs?hasEquity=true");
+    expect(resp.body).toEqual({
+      jobs: [
+        {
+          id: 2,
+          title: "j2",
+          salary: 200000,
+          equity: '0.02',
+          companyHandle: 'c1',
+        },
+      ],
+    });
+    expect(resp.status).toEqual(200);
+  });
 
-  // test("returns error JSON for invalid search term", async function () {
-  //   const resp = await request(app).get(
-  //     "/companies?termDoesNotExist=c&minEmployees=2"
-  //   );
-  //   expect(resp.error.status).toEqual(400);
-  // });
+  test("works for filtering by many fields", async function () {
+    const resp = await request(app).get(
+      "/jobs?title=j&minSalary=100000&hasEquity=false"
+    );
+      console.log(resp);
+    expect(resp.status).toEqual(200);
+    expect(resp.body).toEqual({
+      jobs: [
+        {
+          id: 1,
+          title: "j1",
+          salary: 100000,
+          equity: '0',
+          companyHandle: 'c1',
+        },
+        {
+          id: 3,
+          title: "j3",
+          salary: 300000,
+          equity: '0',
+          companyHandle: 'c2',
+        },
+      ],
+    });
+  });
+
+  test("returns error JSON for invalid search term", async function () {
+    const resp = await request(app).get(
+      "/jobs?termDoesNotExist=j&minSalary=100000"
+    );
+    expect(resp.error.status).toEqual(400);
+  });
 
   test("fails: test next() handler", async function () {
     // there's no normal failure event which will cause this route to fail ---

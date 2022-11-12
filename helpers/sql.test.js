@@ -6,6 +6,7 @@ const {
   sqlForCompanySearch,
   _sqlForCompanySearchByName,
   _sqlForCompanySearchByNumEmps,
+  sqlForJobSearch,
 } = require("./sql");
 
 describe("sqlForPartialUpdate", function () {
@@ -187,5 +188,51 @@ describe("sqlForCompanySearch", function () {
         maxEmployees: 1,
       });
     }).toThrow(BadRequestError);
+  });
+});
+
+describe("sqlForJobSearch", function () {
+  test("Given empty object returns an object with correct empty values", function () {
+    const result = sqlForJobSearch({});
+    expect(result).toEqual({
+      searchCols: "",
+      values: []
+    });
+  });
+
+  test("Given object with one property returns correct object", function () {
+    const result = sqlForJobSearch({ minSalary: 200000 });
+    expect(result).toEqual({
+      searchCols: "salary >= $1",
+      values: [200000]
+    });
+  });
+
+  test("Given object with one property returns correct object", function () {
+    const result = sqlForJobSearch({ hasEquity: false });
+    expect(result).toEqual({
+      searchCols: "equity = $1",
+      values: [0]
+    });
+  });
+
+  test("Given object with one property returns correct object", function () {
+    const result = sqlForJobSearch({ title: "senior" });
+    expect(result).toEqual({
+      searchCols: "title ILIKE $1",
+      values: ['%senior%']
+    });
+  });
+
+  test("Given object with all properties returns correct object", function () {
+    const result = sqlForJobSearch({
+      title: "senior",
+      minSalary: 300000,
+      hasEquity: true,
+    });
+    expect(result).toEqual({
+      searchCols: "title ILIKE $1 AND salary >= $2 AND equity > $3",
+      values: ['%senior%', 300000, 0]
+    });
   });
 });

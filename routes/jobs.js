@@ -67,10 +67,21 @@ router.get("/", async function (req, res, next) {
   if (parsedQs.minSalary !== undefined) {
     parsedQs.minSalary = parseInt(parsedQs.minSalary);
   }
+  // Need to "parse boolean" for hasEquity
+  if (parsedQs.hasEquity !== undefined) {
+    if(parsedQs.hasEquity === "true") {
+      parsedQs.hasEquity = true;
+    }
+    if(parsedQs.hasEquity === "false") {
+      parsedQs.hasEquity = false;
+    }
+  }
 
-  const validator = jsonschema.validate(parsedQs, jobSearchSchema, {
-    required: true,
-  });
+  const validator = jsonschema.validate(
+    parsedQs,
+    jobSearchSchema,
+    {required: true},
+  );
   if (!validator.valid) {
     const errs = validator.errors.map((e) => e.stack);
     throw new BadRequestError(errs);

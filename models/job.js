@@ -2,7 +2,7 @@
 
 const db = require("../db");
 const { BadRequestError, NotFoundError } = require("../expressError");
-const { sqlForPartialUpdate, sqlForCompanySearch } = require("../helpers/sql");
+const { sqlForPartialUpdate, sqlForJobSearch } = require("../helpers/sql");
 
 /** Related functions for jobs. */
 
@@ -63,7 +63,7 @@ class Job {
   /** Find companies with certain filters applied
    *  Accepts object of parameters
    *
-   *  Returns [{ title, salary, equity, company_handle }, ...]
+   *  Returns [{ id, title, salary, equity, company_handle }, ...]
    */
 
   static async findBySearch(queryParams) {

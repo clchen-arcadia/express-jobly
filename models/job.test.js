@@ -22,7 +22,7 @@ describe("create", function () {
     title: "newJob",
     salary: 123456,
     equity: 0.01,
-    company_handle: 'c1'
+    companyHandle: 'c1'
   };
 
   test("works", async function () {
@@ -102,7 +102,6 @@ describe("get", function () {
       await Job.get(42);
       throw new Error("fail test, you shouldn't get here");
     } catch (err) {
-      console.log("test----", err);
       expect(err instanceof NotFoundError).toBeTruthy();
     }
   });
@@ -216,60 +215,59 @@ describe("remove", function () {
 
 /************************************** search */
 
-// NOT IMPLEMENTED YET TODO:
-// describe("search", function () {
-//   test("works with search term", async function () {
-//     const result = await Company.findBySearch(
-//       {nameLike: 'c1'}
-//       );
-//     expect(result).toEqual([
-//       {
-//         handle: "c1",
-//         name: "C1",
-//         description: "Desc1",
-//         numEmployees: 1,
-//         logoUrl: "http://c1.img",
-//       },
-//     ]);
-//   });
+describe("search", function () {
+  test("works with search term", async function () {
+    const result = await Job.findBySearch(
+      {title: 'j1'}
+      );
+    expect(result).toEqual([
+      {
+        id: 1,
+        title: "j1",
+        salary: 100000,
+        equity: '0',
+        companyHandle: 'c1',
+      }
+    ]);
+  });
 
-//   test("works with multiple search terms", async function () {
-//     const result = await Company.findBySearch(
-//       {
-//         nameLike: 'c',
-//         minEmployees: 2
-//       }
-//       );
-//     expect(result).toEqual([
-//       {
-//         handle: "c2",
-//         name: "C2",
-//         description: "Desc2",
-//         numEmployees: 2,
-//         logoUrl: "http://c2.img",
-//       },
-//       {
-//         handle: "c3",
-//         name: "C3",
-//         description: "Desc3",
-//         numEmployees: 3,
-//         logoUrl: "http://c3.img",
-//       },
-//     ]);
-//   });
+  test("works with multiple search terms", async function () {
+    const result = await Job.findBySearch(
+      {
+        nameLike: 'c',
+        minSalary: 200000
+      }
+      );
+    expect(result).toEqual([
+      {
+        id: 2,
+        title: "j2",
+        salary: 200000,
+        equity: '0.02',
+        companyHandle: 'c1',
+      },
+      {
+        id: 3,
+        title: "j3",
+        salary: 300000,
+        equity: '0',
+        companyHandle: 'c2',
+      },
+    ]);
+  });
 
-//   test("works where search excludes all companies", async function () {
-//     const result = await Company.findBySearch(
-//       {
-//         nameLike: 'c',
-//         minEmployees: 5
-//       }
-//       );
-//     expect(result).toEqual([]);
+  test("works where search excludes all companies", async function () {
+    const result = await Job.findBySearch(
+      {
+        nameLike: 'j',
+        minSalary: 500000
+      }
+      );
+    expect(result).toEqual([]);
 
-//   });
+  });
 
-//   // Note: search term validation not done at Model class level
-//   // it is done on the route level.
+  // Note: search term validation not done at Model class level
+  // it is done on the route level.
 
-// });
+});

@@ -168,9 +168,55 @@ function _sqlForCompanySearchByNumEmps(conditions, currentIdx) {
   };
 }
 
+/**
+ * Function accepts parameters object, whose keys are allowed search parameters.
+ * Function returns an object with two key-value pairs.
+ * For searchCols postgres WHERE clauses are joined with " AND ", giving a string.
+ * And values is an array of the relevant values being searched by.
+ *
+ * Accepts Object like: { title: "senior", minSalary: 100000, hasEquity: true }
+ * Returns Object like: {
+          searchCols (string): 'title ILIKE $1 AND minSalary >= $2 AND hasEquity > $3',
+          values (array): ["%senior%", 100000, 0]
+        }
+ */
+
+function sqlForJobSearch(queryParams) {
+
+  const { title, minSalary, hasEquity } = queryParams;
+
+  const cols = [];
+  const values = [];
+
+  if( title !== undefined ){
+    cols.push(`title ILIKE $${values.length + 1}`);
+    values.push(`%${title}%`);
+  }
+  if( minSalary !== undefined ){
+    cols.push(`salary >= $${values.length + 1}`);
+    values.push(minSalary);
+  }
+  if( hasEquity !== undefined ){
+    if(hasEquity === true){
+      cols.push(`equity > $${values.length + 1}`);
+      values.push(0);
+    }
+    if(hasEquity === false){
+      cols.push(`equity = $${values.length + 1}`);
+      values.push(0);
+    }
+  }
+
+  return {
+    searchCols: cols.join(" AND "),
+    values: values,
+  }
+}
+
 module.exports = {
   sqlForPartialUpdate,
   sqlForCompanySearch,
   _sqlForCompanySearchByName,
   _sqlForCompanySearchByNumEmps,
+  sqlForJobSearch,
 };
