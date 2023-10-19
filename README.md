@@ -1,4 +1,4 @@
-# Jobly Backend
+# Express Jobly
 
 This is the Express backend for the job board, Jobly.  
 Created with the framework Express.js in the Node.js runtime.  
