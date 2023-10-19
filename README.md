@@ -5,7 +5,7 @@ Created with the framework Express.js in the Node.js runtime.
 An API that connects to the frontend: https://github.com/clchen-arcadia/react-jobly  
 
 Live Demo: https://express-jobly-cdxn.onrender.com  
-For example: query the companies at: https://express-jobly-cdxn.onrender.com/companies  
+For example, query the companies at: https://express-jobly-cdxn.onrender.com/companies  
 It can also serve HTTP requests from a program like Insomnia.
 
 To run locally:
