@@ -7,6 +7,7 @@ An API that connects to the frontend: https://github.com/clchen-arcadia/react-jo
 ## Live Demo: https://express-jobly-cdxn.onrender.com  
 For example, query the companies at: https://express-jobly-cdxn.onrender.com/companies  
 It can also serve HTTP requests from a program like Insomnia.
+![Express Jobly API](./jobly-api.png "Express Jobly")
 
 To run locally:
 1. Clone the repo
